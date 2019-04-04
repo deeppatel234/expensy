@@ -3,7 +3,7 @@ const crypto = require('crypto');
 
 const Mixins = require('../../mixins');
 
-class Token extends Mixins(Document).with('AccessControl', 'Controllers') {
+class Token extends Mixins(Document).with('Controllers', 'AccessControl') {
   /**
    * ===================================
    *        Override Methods

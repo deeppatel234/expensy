@@ -6,7 +6,7 @@ const { Document, getObjectID } = require('mongoorm');
 
 const Mixins = require('../../mixins');
 
-class User extends Mixins(Document).with('AccessControl', 'Controllers') {
+class User extends Mixins(Document).with('Controllers', 'AccessControl') {
   /**
    * ===================================
    *        Override Methods
