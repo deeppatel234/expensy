@@ -88,4 +88,4 @@ class User extends Mixins(Document).with('AccessControl', 'Controllers') {
   }
 }
 
-module.exports = new User({ document: 'user', info: { string: 'User', icon: 'user' } });
+module.exports = new User({ document: 'user' });

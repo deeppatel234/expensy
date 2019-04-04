@@ -1,4 +1,4 @@
-const { Fields, getObjectID } = require('mongoorm');
+const { getObjectID } = require('mongoorm');
 const _pick = require('lodash/pick');
 const _intersection = require('lodash/intersection');
 
@@ -66,12 +66,8 @@ const AccessControl = ClassName => class extends ClassName {
    * ===================================
    */
 
-  /**
-   * add access fields
-   * @param {Object} fields
-   */
-  defaultFields(fields) {
-    return Object.assign({}, super.defaultFields(fields) || {}, this.__AccessControl_scanFields());
+  initFields(fields) {
+    return { ...super.initFields(fields), ...this.__AccessControl_scanFields(fields) };
   }
 
   controllers() {
@@ -291,20 +287,20 @@ const AccessControl = ClassName => class extends ClassName {
   /**
    * Compute and scan access controll fields
    */
-  __AccessControl_scanFields() {
+  __AccessControl_scanFields(fields) {
     this.accessRules = Object.assign({}, DEFAULT_ACCESS, this.accessControls());
     const accessFields = {
-      userId: Fields.ObjectId(),
+      userId: fields.ObjectId(),
     };
 
     Object.keys(this.accessRules)
       .forEach(role => Object.keys(this.accessRules[role]).forEach((operation) => {
         const { action } = this.accessRules[role][operation];
         if (!accessFields.sharedUserIds && action.includes(ACCESS.SHARE)) {
-          accessFields.sharedUserIds = Fields.Array({ ele: Fields.ObjectId() });
+          accessFields.sharedUserIds = fields.Array({ ele: fields.ObjectId() });
         }
         if (!accessFields.isPublic && action.includes(ACCESS.PUBLIC)) {
-          accessFields.isPublic = Fields.Boolean();
+          accessFields.isPublic = fields.Boolean();
         }
       }));
     return accessFields;
@@ -376,13 +372,9 @@ const AccessControl = ClassName => class extends ClassName {
   async create({ record }, context) {
     const dataToCreate = await this.hasAccess(OPERATIONS.CREATE, { record }, context);
 
-    if (Array.isArray(dataToCreate)) {
-      return this.insertManyRecords(dataToCreate);
-    }
-
-    const record = this.createRecord(dataToCreate);
-    await record.save();
-    return record.toJson();
+    const newRecord = this.createRecord(dataToCreate);
+    await newRecord.save();
+    return newRecord.get();
   }
 
   /**
@@ -394,14 +386,8 @@ const AccessControl = ClassName => class extends ClassName {
   async deleteone({ query }, context) {
     const deleteQuery = await this.hasAccess(OPERATIONS.DELETE, { query }, context);
 
-    const dbrecord = await this.findOne(this.__AccessControl_prepareQueryData(deleteQuery));
-    if (!dbrecord || dbrecord === null) {
-      throw new Error('Data not found');
-    }
-
-    const record = this.createRecord(dbrecord);
-    await record.delete();
-    return { deleted: true };
+    const deleteRes = await this.deleteOne(this.__AccessControl_prepareQueryData(deleteQuery));
+    return { deleted: deleteRes };
   }
 
   /**
@@ -412,7 +398,15 @@ const AccessControl = ClassName => class extends ClassName {
    */
   async read(value, context) {
     const readQuery = await this.hasAccess(OPERATIONS.READ, value, context);
-    return this.findToArray(this.__AccessControl_prepareQueryData(readQuery.query), readQuery.options);
+    return new Promise((res, rej) => {
+      this.find(this.__AccessControl_prepareQueryData(readQuery.query), readQuery.options).toArray(function (err, data) {
+        if (err) {
+          rej(err);
+        } else {
+          res(data);
+        }
+      });
+    });
   }
 
   /**
@@ -440,10 +434,10 @@ const AccessControl = ClassName => class extends ClassName {
       throw new Error('Data not found');
     }
 
-    const record = this.createRecord(dbrecord);
-    record.ele.set(updateQuery.data);
-    await record.save();
-    return record.toJson();
+    const updateRecord = this.createRecord(dbrecord);
+    updateRecord.set(updateQuery.data);
+    await updateRecord.save();
+    return updateRecord.get();
   }
 
   /**
@@ -454,8 +448,8 @@ const AccessControl = ClassName => class extends ClassName {
    */
   async updatemany(value, context) {
     const updateQuery = await this.hasAccess(OPERATIONS.UPDATE, value, context);
-    await this.updateManyRecords(this.__AccessControl_prepareQueryData(updateQuery.searchQuery), updateQuery.data);
-    return { updated: true };
+    const updateManuRes = await this.updateMany(this.__AccessControl_prepareQueryData(updateQuery.searchQuery), updateQuery.data);
+    return { updated: updateManuRes };
   }
 };
 

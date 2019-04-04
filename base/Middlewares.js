@@ -47,5 +47,4 @@ module.exports = {
   auth,
   hasData,
   reqtoken,
-  user,
 };
