@@ -2,8 +2,7 @@
 const crypto = require('crypto');
 
 // Internal Module
-const { Document, getObjectID, ObjectId } = require('mongoorm');
-const ModelRegistry = require('../../registery/ModelRegistry');
+const { Document, getObjectID } = require('mongoorm');
 
 const Mixins = require('../../mixins');
 
@@ -124,7 +123,7 @@ class User extends Mixins(Document).with('AccessControl', 'Controllers') {
       throw new Error('username or password not match');;
     }
 
-    const accessToken = await ModelRegistry.get('token').createAccessToken(user, req.headers['user-agent'], context);
+    const accessToken = await this.env.token.createAccessToken(user, req.headers['user-agent'], context);
 
     return { token: accessToken };
   }
@@ -134,14 +133,14 @@ class User extends Mixins(Document).with('AccessControl', 'Controllers') {
     record = { ...record, password: record.password && this.getHashPassword(record.password) };
     const user = await this.create({ record }, this.sudoContext(context));
 
-    const accessToken = await ModelRegistry.get('token').createAccessToken(user, req.headers['user-agent'], context);
+    const accessToken = await this.env.token.createAccessToken(user, req.headers['user-agent'], context);
 
     return { token: accessToken };
   }
 
 
   async varifyController(value) {
-    const { isValid } = await ModelRegistry.get(value.token);
+    const { isValid } = await this.env.token.varifyAccessToken(value.token);
     return { isValid };
   }
 

@@ -15,19 +15,19 @@ class ModelRegistery extends Registery {
         MyModel.js
   */
   scanModules() {
-    const self = this;
     return new Promise((res, rej) => {
       try {
         const modules = fs.readdirSync(apiDirectory);
-        modules.forEach(function (module) {
+        modules.forEach((module) => {
           const modulePath = `${apiDirectory}/${module}`;
           const state = fs.lstatSync(modulePath);
           if (state.isDirectory()) {
             let files = fs.readdirSync(modulePath);
             files = files.filter(file => file.endsWith('Model.js'));
-            files.forEach(function (file) {
+            files.forEach((file) => {
               const modelImport = require(`${modulePath}/${file}`);
-              self.set(modelImport.documentName, modelImport);
+              modelImport.env = this.data;
+              this.set(modelImport.documentName, modelImport);
             });
           }
         });
