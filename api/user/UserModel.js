@@ -13,10 +13,6 @@ class User extends Mixins(Document).with('AccessControl', 'Controllers') {
    * ===================================
    */
 
-  constructor(props) {
-    super(props);
-  }
-
   /**
    * initialize field
    *
