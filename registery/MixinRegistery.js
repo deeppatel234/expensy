@@ -12,17 +12,15 @@ class MinixRegistery extends Registery {
       MyMixin.js
   */
   scanMixins() {
-    const self = this;
     return new Promise((res, rej) => {
       try {
         const modules = fs.readdirSync(mixinDirectory);
         modules
           .filter(module => (module !== 'index.js'))
-          .forEach(function (module) {
-            self.isScanned = true;
+          .forEach((module) => {
             const mixinPath = `${mixinDirectory}/${module}`;
             const minixImport = require(mixinPath);
-            self.set(module.replace('.js', ''), minixImport);
+            this.set(module.replace('.js', ''), minixImport);
           });
         res();
       } catch (err) {
