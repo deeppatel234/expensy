@@ -20,11 +20,31 @@ const getTokenFromRequest = function (req) {
 };
 
 const auth = async function (req, res, next) {
-  next();
+  const token = getTokenFromRequest(req);
+  try {
+    const { isValid, user } = await ModelRegistry.get('token').varifyAccessToken(token);
+    if (isValid) {
+      req.user = user;
+      next();
+    } else {
+      res.send(response.error('Token not authorised', response.errorCode.Unauthorized));
+    }
+  } catch (err) {
+    logger.error(err);
+    res.send(response.error('Something went wrong'));
+  }
 };
 
-const reqtoken = function (req, res, next) {
-  req.token = getTokenFromRequest(req);
+const user = async function (req, res, next) {
+  const token = getTokenFromRequest(req);
+  try {
+    const { isValid, user } = await ModelRegistry.get('token').varifyAccessToken(token);
+    if (isValid) {
+      req.user = user;
+    }
+  } catch (err) {
+    logger.error(err);
+  }
   next();
 };
 
@@ -46,5 +66,5 @@ const hasData = function (data) {
 module.exports = {
   auth,
   hasData,
-  reqtoken,
+  user,
 };

@@ -1,4 +1,4 @@
-const { getObjectID } = require('mongoorm');
+const { Fields, getObjectID } = require('mongoorm');
 const _pick = require('lodash/pick');
 const _intersection = require('lodash/intersection');
 
@@ -128,7 +128,7 @@ const AccessControl = ClassName => class extends ClassName {
       return Object.assign(query, { isPublic: true });
     }
 
-    userId = getObjectID(userid);
+    userId = getObjectID(userId);
 
     if (rule === ACCESS.OWN) {
       return Object.assign(query, { userId });
@@ -256,7 +256,7 @@ const AccessControl = ClassName => class extends ClassName {
    * @param {object} query
    */
   __AccessControl_prepareQueryData(query) {
-    const elements = _pick(this.fields.props.ele, Object.keys(query));
+    const elements = _pick(this.schema.fields.props.ele, Object.keys(query));
     const keys = [];
     Object.keys(elements).forEach((ele) => {
       if (Fields.ObjectIdField === elements[ele].fieldClass) {
@@ -288,18 +288,24 @@ const AccessControl = ClassName => class extends ClassName {
    * Compute and scan access controll fields
    */
   __AccessControl_scanFields(fields) {
-    this.accessRules = Object.assign({}, DEFAULT_ACCESS, this.accessControls());
+    this.accessRules = Object.assign({}, DEFAULT_ACCESS, this.accessControls({
+      ACCESS,
+      OPERATIONS,
+      ROLE,
+      ALL_ATTRIBUTE,
+    }));
+
     const accessFields = {
       userId: fields.ObjectId(),
     };
 
     Object.keys(this.accessRules)
       .forEach(role => Object.keys(this.accessRules[role]).forEach((operation) => {
-        const { action } = this.accessRules[role][operation];
-        if (!accessFields.sharedUserIds && action.includes(ACCESS.SHARE)) {
+        const { rule } = this.accessRules[role][operation];
+        if (!accessFields.sharedUserIds && rule === ACCESS.SHARE) {
           accessFields.sharedUserIds = fields.Array({ ele: fields.ObjectId() });
         }
-        if (!accessFields.isPublic && action.includes(ACCESS.PUBLIC)) {
+        if (!accessFields.isPublic && rule === ACCESS.PUBLIC) {
           accessFields.isPublic = fields.Boolean();
         }
       }));
