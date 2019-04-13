@@ -1,9 +1,9 @@
 // Internal Module
-const { Document, getObjectID } = require('mongoorm');
+const { Document } = require('mongoorm');
 
 const Mixins = require('../../mixins');
 
-class Category extends Mixins(Document).with('Controllers', 'AccessControl') {
+class Wallet extends Mixins(Document).with('Controllers', 'AccessControl') {
   /**
    * ===================================
    *        Override Methods
@@ -19,9 +19,11 @@ class Category extends Mixins(Document).with('Controllers', 'AccessControl') {
   initFields(fields) {
     return Object.assign(super.initFields(fields), {
       name: fields.String({ required: true }),
+      type: fields.String({ required: true, enum: ['bank', 'cash'] }),
       icon: fields.String({ required: true }),
+      balance: fields.Number({ required: true }),
     });
   }
 }
 
-module.exports = new Category({ document: 'category' });
+module.exports = new Wallet({ document: 'wallet' });

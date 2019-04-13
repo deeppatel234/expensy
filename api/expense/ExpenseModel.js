@@ -1,5 +1,5 @@
 // Internal Module
-const { Document, getObjectID } = require('mongoorm');
+const { Document } = require('mongoorm');
 
 const Mixins = require('../../mixins');
 
@@ -18,11 +18,12 @@ class Expense extends Mixins(Document).with('Controllers', 'AccessControl') {
    */
   initFields(fields) {
     return Object.assign(super.initFields(fields), {
-      amount: fields.Number({ required: true }),
-      payTo: fields.String({ required: true }),
-      paymentMethod: fields.ObjectId({ required: true }),
-      category: fields.ObjectId({ required: true }),
+      type: fields.String({ required: true, enum: ['income', 'expense', 'transfer'] }),
       description: fields.String(),
+      amount: fields.Number({ required: true }),
+      wallet: fields.ObjectId({ required: true }),
+      toWallet: fields.ObjectId(),
+      category: fields.ObjectId({ required: true }),
       dateTime: fields.DateTime({ required: true, defaultValue: 'now' }),
     });
   }
