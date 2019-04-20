@@ -3,7 +3,7 @@ const { Document } = require('mongoorm');
 
 const Mixins = require('../../mixins');
 
-class Category extends Mixins(Document).with('Controllers', 'AccessControl') {
+class Category extends Mixins(Document).with('Controllers', 'AccessControl', 'Sync') {
   /**
    * ===================================
    *        Override Methods

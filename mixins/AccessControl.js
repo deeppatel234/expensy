@@ -78,11 +78,6 @@ const AccessControl = ClassName => class extends ClassName {
       params: ['record'],
       auth: !this.hasPublicAccess(OPERATIONS.CREATE),
     }, {
-      route: '/createmany',
-      method: this.createMany,
-      params: ['records'],
-      auth: !this.hasPublicAccess(OPERATIONS.CREATE),
-    }, {
       route: '/read',
       method: this.read,
       params: [['query', 'ids', 'id', 'own']],
@@ -387,38 +382,6 @@ const AccessControl = ClassName => class extends ClassName {
     const newRecord = this.createRecord(dataToCreate);
     await newRecord.save();
     return newRecord.get();
-  }
-
-  /**
-   * Create multiple record
-   *
-   * @param {object} value
-   * @param {object} user
-   */
-  async createMany({ records }, context) {
-    let datasToCreate = await Promise.all(records.map(record => this.hasAccess(OPERATIONS.CREATE, { record }, context)));
-
-    datasToCreate.forEach((dc) => {
-      if (dc._id) {
-        dc.mid = dc._id;
-        delete dc._id;
-      }
-    });
-
-    datasToCreate = _keyBy(datasToCreate, 'mid');
-
-    const response = [];
-
-    const mids = Object.keys(datasToCreate);
-
-    for (let i = 0; i < mids.length; i++) {
-      const mid = mids[i];
-      const newRecord = this.createRecord(datasToCreate[mid]);
-      await newRecord.save();
-      response.push({ ...newRecord.get(), mid });
-    }
-
-    return response;
   }
 
   /**

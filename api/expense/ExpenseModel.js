@@ -1,9 +1,11 @@
 // Internal Module
 const { Document } = require('mongoorm');
+const _keyBy = require('lodash/keyBy');
+const _isEmpty = require('lodash/isEmpty');
 
 const Mixins = require('../../mixins');
 
-class Expense extends Mixins(Document).with('Controllers', 'AccessControl') {
+class Expense extends Mixins(Document).with('Controllers', 'AccessControl', 'Sync') {
   /**
    * ===================================
    *        Override Methods
@@ -26,6 +28,34 @@ class Expense extends Mixins(Document).with('Controllers', 'AccessControl') {
       category: fields.ObjectId({ required: true }),
       dateTime: fields.DateTime({ required: true, defaultValue: 'now' }),
     });
+  }
+
+  async syncController({ records, syncTime }, context) {
+    if (!_isEmpty(records)) {
+      const foreignKeys = ['category', 'wallet', 'toWallet'];
+
+      for (let i = 0; i < foreignKeys.length; i++) {
+        const key = foreignKeys[i];
+        const keyRecords = records.filter(r => r[key] && r[key].length < 20);
+
+        if(_isEmpty(keyRecords)) {
+          continue;
+        }
+
+        const mids = keyRecords.map(kr => kr[key]);
+
+        const model = key === 'category' ? 'category' : 'wallet';
+        const relationRecords = await this.env[model].read({ query: { mid: { $in: mids } } }, context);
+
+        const midMap = _keyBy(relationRecords, 'mid');
+
+        keyRecords.forEach((kr) => {
+          kr[key] = midMap[kr[key]]._id;
+        });
+      }
+    }
+
+    return super.syncController({ records, syncTime }, context);
   }
 }
 
