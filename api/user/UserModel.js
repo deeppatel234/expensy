@@ -21,12 +21,10 @@ class User extends Mixins(Document).with('Controllers', 'AccessControl') {
    */
   initFields(fields) {
     return Object.assign(super.initFields(fields), {
-      firstname: fields.String({ capitalize: true, required: true }),
-      lastname: fields.String({ capitalize: true, required: true }),
-      username: fields.String({ required: true, unique: true }),
-      role: fields.String({ required: true, defaultValue: 'user' }),
+      name: fields.String({ required: true }),
       email: fields.String({ required: true, email: true, unique: true }),
       password: fields.String({ required: true }),
+      role: fields.String({ required: true, defaultValue: 'user' }),
       isConfirmEmail: fields.Boolean(),
       confirmMailId: fields.String(),
       forgotPasswordId: fields.String(),
@@ -45,8 +43,8 @@ class User extends Mixins(Document).with('Controllers', 'AccessControl') {
         [OPERATIONS.DELETE]: { rule: ACCESS.DENIED, attributes: ALL_ATTRIBUTE },
       },
       [ROLE.USER]: {
-        [OPERATIONS.READ]: { rule: ACCESS.OWN, attributes: ['firstname', 'lastname', 'username', 'email', 'profileImage', 'isConfirmEmail'] },
-        [OPERATIONS.UPDATE]: { rule: ACCESS.OWN, attributes: ['firstname', 'lastname', 'username', 'email', 'password', 'profileImage'] },
+        [OPERATIONS.READ]: { rule: ACCESS.OWN, attributes: ['name', 'email', 'isConfirmEmail'] },
+        [OPERATIONS.UPDATE]: { rule: ACCESS.OWN, attributes: ['name', 'email', 'password'] },
         [OPERATIONS.CREATE]: { rule: ACCESS.DENIED, attributes: ALL_ATTRIBUTE },
         [OPERATIONS.DELETE]: { rule: ACCESS.OWN, attributes: ALL_ATTRIBUTE },
       }
@@ -91,7 +89,7 @@ class User extends Mixins(Document).with('Controllers', 'AccessControl') {
       type: 'post',
       route: '/login',
       method: this.loginController,
-      params: ['username', 'password'],
+      params: ['email', 'password'],
       auth: false,
     }, {
       route: '/signup',
@@ -111,12 +109,12 @@ class User extends Mixins(Document).with('Controllers', 'AccessControl') {
 
   async loginController(value, context, req) {
     const user = await this.findOne({
-      username: value.username,
+      email: value.email,
       password: this.getHashPassword(value.password),
     });
 
     if (!user) {
-      throw new Error('username or password not match');;
+      throw new Error('email or password not match');;
     }
 
     const accessToken = await this.env.token.createAccessToken(user, req.headers['user-agent'], context);
