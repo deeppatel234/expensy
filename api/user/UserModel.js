@@ -76,6 +76,18 @@ class User extends Mixins(Document).with('Controllers', 'AccessControl') {
   }
 
   /**
+   * Create record
+   *
+   * @param {object} value
+   * @param {object} user
+   */
+  async create(record, context) {
+    const user = await super.create(record, context);
+    await this.env.category.createDefaultCategory(user._id, context);
+    return user;
+  }
+
+  /**
    * ===================================
    *        Controllers
    * ===================================

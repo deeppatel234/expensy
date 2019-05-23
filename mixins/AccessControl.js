@@ -385,6 +385,16 @@ const AccessControl = ClassName => class extends ClassName {
   }
 
   /**
+   * Create record
+   *
+   * @param {object} value
+   * @param {object} user
+   */
+  async createMulti(records, context) {
+    return Promise.all(records.map(record => this.create({ record }, context)));
+  }
+
+  /**
    * Delete Single record
    *
    * @param {object} value
