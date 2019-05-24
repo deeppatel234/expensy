@@ -58,8 +58,8 @@ class Category extends Mixins(Document).with('Controllers', 'AccessControl', 'Sy
     });
   }
 
-  createDefaultCategory(userId, context) {
-    return this.createMulti(DEFAULT_CATEGORIES, { ...context, user: { id: userId } });
+  createDefaultCategory(context) {
+    return this.createMulti(DEFAULT_CATEGORIES, context);
   }
 }
 
