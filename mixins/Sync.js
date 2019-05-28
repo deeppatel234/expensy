@@ -34,7 +34,7 @@ const Sync = ClassName => class extends ClassName {
     return Promise.all(records.map(record => (
       this.updateone({
         query: { _id: record._id },
-        data: record
+        record
       }, context)
     )));
   }

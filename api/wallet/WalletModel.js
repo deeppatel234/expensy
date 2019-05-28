@@ -21,7 +21,6 @@ class Wallet extends Mixins(Document).with('Controllers', 'AccessControl', 'Sync
       name: fields.String({ required: true }),
       type: fields.String({ required: true, enum: ['bank', 'cash'] }),
       icon: fields.String({ required: true }),
-      currency: fields.String({ required: true }),
       balance: fields.Number({ required: true }),
     });
   }
