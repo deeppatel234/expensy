@@ -5,7 +5,7 @@ const _isEmpty = require('lodash/isEmpty');
 
 const Mixins = require('../../mixins');
 
-class Expense extends Mixins(Document).with('Controllers', 'AccessControl', 'Sync') {
+class Transaction extends Mixins(Document).with('Controllers', 'AccessControl', 'Sync') {
   /**
    * ===================================
    *        Override Methods
@@ -59,4 +59,4 @@ class Expense extends Mixins(Document).with('Controllers', 'AccessControl', 'Syn
   }
 }
 
-module.exports = new Expense({ document: 'expense' });
+module.exports = new Transaction({ document: 'money_transaction' });

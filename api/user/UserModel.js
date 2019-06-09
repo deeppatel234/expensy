@@ -86,6 +86,7 @@ class User extends Mixins(Document).with('Controllers', 'AccessControl') {
     const userContext = { ...context, user: { id: user._id } };
     await this.env.setting.create({ record: {} }, userContext);
     await this.env.category.createDefaultCategory(userContext);
+    await this.env.wallet.createDefaultWallet(userContext);
     return user;
   }
 

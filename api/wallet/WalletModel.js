@@ -3,6 +3,13 @@ const { Document } = require('mongoorm');
 
 const Mixins = require('../../mixins');
 
+const DEFAULT_WALLETS = [{
+  name: 'Cash',
+  type: 'cash',
+  icon: 'WALLET',
+}];
+
+
 class Wallet extends Mixins(Document).with('Controllers', 'AccessControl', 'Sync') {
   /**
    * ===================================
@@ -21,8 +28,13 @@ class Wallet extends Mixins(Document).with('Controllers', 'AccessControl', 'Sync
       name: fields.String({ required: true }),
       type: fields.String({ required: true, enum: ['bank', 'cash'] }),
       icon: fields.String({ required: true }),
-      balance: fields.Number({ required: true }),
+      balance: fields.Number({ default: 0 }),
+      initialBalance: fields.Number({ default: 0 }),
     });
+  }
+
+  createDefaultWallet(context) {
+    return this.createMulti(DEFAULT_WALLETS, context);
   }
 }
 
