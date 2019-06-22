@@ -132,17 +132,17 @@ class User extends Mixins(Document).with('Controllers', 'AccessControl') {
       throw new Error('email or password not match');;
     }
 
-    const accessToken = await this.env.token.createAccessToken(user, req.headers['user-agent'], context);
+    const accessToken = await this.env.token.createAccessToken(user, value.deviceInfo, context);
 
     return { token: accessToken };
   }
 
   async signUpController(value, context, req) {
-    let { record } = value;
+    let { record, deviceInfo } = value;
     record = { ...record, password: record.password && this.getHashPassword(record.password) };
     const user = await this.create({ record }, this.sudoContext(context));
 
-    const accessToken = await this.env.token.createAccessToken(user, req.headers['user-agent'], context);
+    const accessToken = await this.env.token.createAccessToken(user, deviceInfo, context);
 
     return { token: accessToken };
   }

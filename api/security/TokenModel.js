@@ -22,7 +22,7 @@ class Token extends Mixins(Document).with('Controllers', 'AccessControl') {
       loginAt: fields.DateTime({ string: 'Login At', required: true }),
       logoutAt: fields.DateTime({ string: 'Logout At' }),
       isLoggedIn: fields.Boolean({ string: 'Logged In' }),
-      userAgent: fields.String({ string: 'User Agent' }),
+      deviceInfo: fields.String({ string: 'Device Info' }),
       userId: fields.ObjectId({ required: true }),
       userRole: fields.String({ required: true }),
     });
@@ -32,7 +32,7 @@ class Token extends Mixins(Document).with('Controllers', 'AccessControl') {
    * generate access token of user
    *
    */
-  async createAccessToken(user, userAgent, context) {
+  async createAccessToken(user, deviceInfo, context) {
     const payload = {
       unique_id: new ObjectId().toString(),
       userid: user._id,
@@ -44,7 +44,7 @@ class Token extends Mixins(Document).with('Controllers', 'AccessControl') {
         token: crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex'),
         loginAt: new Date().toUTCString(),
         isLoggedIn: true,
-        userAgent,
+        deviceInfo: JSON.stringify(deviceInfo),
         userId: user._id,
         userRole: user.role,
       },

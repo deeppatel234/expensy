@@ -60,6 +60,7 @@ const Controllers = ClassName => class extends ClassName {
         params = [],
         auth = true,
         middlewares = [],
+        version = 1,
       } = controller;
 
       if (auth) {
@@ -72,7 +73,7 @@ const Controllers = ClassName => class extends ClassName {
         middlewares.push(Middlewares.hasData(params));
       }
 
-      router[type](route, ...middlewares, async function (req, res, next) {
+      router[type](`/v${version}${route}`, ...middlewares, async function (req, res, next) {
         const value = req.body || {};
         const context = {
           user: req.user || {},
