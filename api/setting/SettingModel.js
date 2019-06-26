@@ -37,13 +37,20 @@ class Setting extends Mixins(Document).with('Controllers', 'AccessControl', 'Syn
     return JSON.parse(setting);
   }
 
-  async saveSetting({ setting = {} }, context) {
-    const record = await this.updateone({
+  async getSettingV2(value, context) {
+    const { setting, ...rest } = await this.readone({ userId: context.user.id }, context);
+    const parsedSetting = setting ? (JSON.parse(setting) || {}) : {};
+    return { ...rest, ...parsedSetting };
+  }
+
+  async saveSetting(value, context) {
+    const { setting, ...rest } = await this.updateone({
       query: { userId: context.user.id },
-      record: { setting: JSON.stringify(setting) }
+      record: { setting: JSON.stringify(value.setting) }
     }, context);
 
-    return JSON.parse(record.setting);
+    const parsedSetting = JSON.parse(setting) || {};
+    return { ...rest, ...parsedSetting };
   }
 }
 
