@@ -6,7 +6,7 @@ const { Document, getObjectID } = require('mongoorm');
 
 const Mixins = require('../../mixins');
 
-class User extends Mixins(Document).with('Controllers', 'AccessControl') {
+class User extends Mixins(Document).with('Controllers', 'AccessControl', 'Sync') {
   /**
    * ===================================
    *        Override Methods
@@ -155,6 +155,23 @@ class User extends Mixins(Document).with('Controllers', 'AccessControl') {
 
   async myInfoController(value, context) {
     return this.readone({ id: context.user.id }, context);
+  }
+
+  async syncController(value, context) {
+    const user = await this.readone({ id: context.user.id }, context);
+    let setting = await this.env.setting.getSettingV2(value, context);
+
+    const updatedTime = new Date(value.setting.updatedTime);
+    const writeAt = new Date(setting.writeAt);
+
+    if (updatedTime > writeAt) {
+      setting = await this.env.setting.saveSetting(value, context);
+    }
+
+    return {
+      user,
+      setting,
+    };
   }
 }
 
